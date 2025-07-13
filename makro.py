@@ -27,7 +27,7 @@ temp = ctk.CTk()
 temp.withdraw()
 versión_remota = obtener_versión_remota()
 if versión_remota and versión_remota != VERSIÓN_LOCAL:
-    messagebox.showwarning("🔄 Actualización requerida", f"Hay una nueva versión ({versión_remota}) disponible.\n\nDescárgala desde:\nhttps://github.com/shwrought/makro-updater\n\nEl programa se cerrará.")
+    messagebox.showwarning("🔄 Actualización requerida", f"Hay una nueva versión ({versión_remota}) disponible.\n\nDescárgala desde:\n****.")
     sys.exit()
 
 # ==== 2. VERIFICACIÓN DE CONTRASEÑA ====
