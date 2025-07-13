@@ -1,10 +1,10 @@
 import customtkinter as ctk
-import threading, time, sys, os, urllib.request, win32api, win32con, win32gui, psutil
+import threading, time, sys, os, urllib.request, win32api, win32con, psutil
 from pynput import keyboard
 from tkinter import messagebox
 
 # ==== CONFIGURACIÓN GENERAL ====
-VERSIÓN_LOCAL = "1.1.0"
+VERSIÓN_LOCAL = "1.2.0"
 PASS_DIARIA = "shmakro"
 PASS_MAESTRA = "ashmakroingv1"
 ARCHIVO_BYPASS = "bypass.macro"
@@ -150,23 +150,15 @@ class AutoClicker:
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
-    def is_roblox_active(self):
-        try:
-            hwnd = win32gui.GetForegroundWindow()
-            return "roblox" in win32gui.GetWindowText(hwnd).lower()
-        except:
-            return False
-
     def click_loop(self):
         while self.running:
-            if self.is_roblox_active():
-                for _ in range(self.clicks_per_action):
-                    self.click_mouse()
-                    time.sleep(0.00001)
+            for _ in range(self.clicks_per_action):
+                self.click_mouse()
+                time.sleep(0.00001)
             time.sleep(self.delay)
 
     def burst_click(self):
-        while self.burst_active and self.is_roblox_active():
+        while self.burst_active:
             for _ in range(10):
                 self.click_mouse()
                 time.sleep(0.0001)
@@ -201,14 +193,8 @@ class AutoClicker:
     def set_mode(self, toggle):
         self.toggle_mode = toggle
 
-    def set_key(self, key_str):
-        try:
-            if len(key_str) == 1:
-                self.activation_key = keyboard.KeyCode.from_char(key_str.lower())
-            else:
-                self.activation_key = getattr(keyboard.Key, key_str.lower())
-        except:
-            messagebox.showerror("Error", f"Tecla '{key_str}' no válida.")
+    def set_key_object(self, key_obj):
+        self.activation_key = key_obj
 
 clicker = AutoClicker()
 
@@ -231,16 +217,16 @@ toggle_switch = ctk.CTkSwitch(left_frame, text="Toggle / Hold ", command=lambda:
 toggle_switch.select()
 toggle_switch.pack(pady=5)
 
-ctk.CTkLabel(left_frame, text="Tecla Activadora (Ej: F1, a, b...)", font=FONT_TEXT, text_color=COLOR_SECONDARY).pack()
-key_entry = ctk.CTkEntry(left_frame, placeholder_text="F1", font=FONT_TEXT)
-key_entry.pack(pady=5)
+ctk.CTkLabel(left_frame, text="Presiona una tecla para asignarla", font=FONT_TEXT, text_color=COLOR_SECONDARY).pack()
+def escuchar_tecla():
+    def capturar(key):
+        clicker.set_key_object(key)
+        listener.stop()
 
-def apply_key():
-    new_key = key_entry.get()
-    if new_key:
-        clicker.set_key(new_key)
+    listener = keyboard.Listener(on_press=capturar)
+    listener.start()
 
-ctk.CTkButton(left_frame, text="Aplicar Tecla", command=apply_key, font=FONT_TEXT).pack(pady=5)
+ctk.CTkButton(left_frame, text="Cambiar Tecla", command=escuchar_tecla, font=FONT_TEXT).pack(pady=5)
 
 status_label = ctk.CTkLabel(left_frame, text="Presiona la tecla para iniciar/detener", text_color=COLOR_SECONDARY, font=FONT_STATUS)
 status_label.pack(pady=10)
@@ -279,6 +265,6 @@ def update_status():
         status_label.configure(text="makro INACTIVO", text_color=COLOR_SECONDARY)
     app.after(200, update_status)
 
-app.protocol("WM_DELETE_WINDOW", lambda: app.destroy() if messagebox.askokcancel("Salir", "¿Cerrar MACRO UI?") else None)
+app.protocol("WM_DELETE_WINDOW", lambda: app.destroy() if messagebox.askokcancel("Salir", "¿Quieres cerrar MACRO sh?") else None)
 update_status()
 app.mainloop()
