@@ -4,7 +4,7 @@ from pynput import keyboard
 from tkinter import messagebox
 
 # ==== CONFIGURACIÓN GENERAL ====
-VERSIÓN_LOCAL = "1.2.0"
+VERSIÓN_LOCAL = "1.3.0"
 PASS_DIARIA = "shmakro"
 PASS_MAESTRA = "ashmakroingv1"
 ARCHIVO_BYPASS = "bypass.macro"
@@ -134,6 +134,8 @@ FONT_TITLE = ctk.CTkFont(family="Impact", size=26, weight="bold")
 FONT_TEXT = ctk.CTkFont(family="Consolas", size=13)
 FONT_STATUS = ctk.CTkFont(family="Consolas", size=12, weight="bold")
 
+burst_enabled = ctk.BooleanVar(value=True)
+
 class AutoClicker:
     def __init__(self):
         self.running = False
@@ -175,7 +177,7 @@ class AutoClicker:
                     self.running = True
                     self.holding = True
                     threading.Thread(target=self.click_loop, daemon=True).start()
-        elif hasattr(key, "char") and key.char.lower() == "c":
+        elif hasattr(key, "char") and key.char.lower() == "c" and burst_enabled.get():
             if not self.burst_active:
                 self.burst_active = True
                 threading.Thread(target=self.burst_click, daemon=True).start()
@@ -228,6 +230,8 @@ def escuchar_tecla():
 
 ctk.CTkButton(left_frame, text="Cambiar Tecla", command=escuchar_tecla, font=FONT_TEXT).pack(pady=5)
 
+ctk.CTkCheckBox(left_frame, text="Activar modo BURST (C)", variable=burst_enabled, font=FONT_TEXT, text_color=COLOR_SECONDARY).pack(pady=(5, 0))
+
 status_label = ctk.CTkLabel(left_frame, text="Presiona la tecla para iniciar/detener", text_color=COLOR_SECONDARY, font=FONT_STATUS)
 status_label.pack(pady=10)
 
@@ -236,15 +240,19 @@ def mostrar_autor():
 
 ctk.CTkButton(app, text="ⓘ Info", font=FONT_TEXT, width=70, height=25, fg_color="#111", hover_color="#222", text_color=COLOR_SECONDARY, corner_radius=12, command=mostrar_autor).place(relx=0.87, rely=0.92, anchor="center")
 
-# ==== CHANGELOG DESDE EL SCRIPT ====
+# ==== CHANGELOGs ====
 def obtener_changelog():
     return """
+Version 1.2.0
+
 -Fixes errors
+-Fixed macro no run    in roblox
+-added wait screen
+-change key FIXED
+Version 1.3.0 (new)
 
--wait screen
-
--password changed
-
+- add button for "C"
+boost (On/Off)
 """
 
 ctk.CTkLabel(right_frame, text=" CHANGELOGS", text_color=COLOR_PRIMARY, font=FONT_TEXT).pack(pady=(10, 5))
