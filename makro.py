@@ -4,15 +4,15 @@ from pynput import keyboard
 from tkinter import messagebox
 
 # ==== CONFIGURACIÓN GENERAL ====
-VERSIÓN_LOCAL = "1.3.0"
+VERSIÓN_LOCAL = "1.5.0"
 PASS_DIARIA = "shmakro"
 PASS_MAESTRA = "ashmakroingv1"
 ARCHIVO_BYPASS = "bypass.macro"
 
 # Apariencia
 ctk.set_appearance_mode("dark")
-COLOR_PRIMARY = "#c70039"
-COLOR_SECONDARY = "#888888"
+COLOR_PRIMARY = "#243649"
+COLOR_SECONDARY = "#5C5C5C"
 COLOR_BG = "#000000"
 
 # ==== SPLASH SCREEN ====
@@ -27,7 +27,7 @@ def mostrar_splash():
     ctk.CTkLabel(splash, text="m a k я σ", font=FONT_TITLE, text_color=COLOR_PRIMARY).pack(expand=True)
     ctk.CTkLabel(splash, text="Cargando...", text_color=COLOR_SECONDARY).pack(pady=(0, 20))
 
-    splash.after(3000, splash.destroy)
+    splash.after(2000, splash.destroy)
     splash.mainloop()
 
 mostrar_splash()
@@ -141,46 +141,49 @@ class AutoClicker:
         self.running = False
         self.toggle_mode = True
         self.clicks_per_action = 1
-        self.delay = 0.00001
+        self.delay = 0.01
         self.activation_key = keyboard.Key.f1
         self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         self.listener.start()
         self.holding = False
         self.burst_active = False
+        threading.Thread(target=self.click_loop, daemon=True).start()
+        threading.Thread(target=self.burst_click, daemon=True).start()
 
     def click_mouse(self):
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
     def click_loop(self):
-        while self.running:
-            for _ in range(self.clicks_per_action):
-                self.click_mouse()
-                time.sleep(0.00001)
-            time.sleep(self.delay)
+        while True:
+            if self.running:
+                for _ in range(self.clicks_per_action):
+                    self.click_mouse()
+                    time.sleep(0.0001)
+                time.sleep(self.delay)
+            else:
+                time.sleep(0.05)
 
     def burst_click(self):
-        while self.burst_active:
-            for _ in range(10):
-                self.click_mouse()
-                time.sleep(0.0001)
-            time.sleep(0.0001)
+        while True:
+            if self.burst_active:
+                for _ in range(10):
+                    self.click_mouse()
+                    time.sleep(0.0001)
+                time.sleep(0.000001)
+            else:
+                time.sleep(0.05)
 
     def on_press(self, key):
         if key == self.activation_key:
             if self.toggle_mode:
                 self.running = not self.running
-                if self.running:
-                    threading.Thread(target=self.click_loop, daemon=True).start()
             else:
                 if not self.running:
                     self.running = True
                     self.holding = True
-                    threading.Thread(target=self.click_loop, daemon=True).start()
         elif hasattr(key, "char") and key.char.lower() == "c" and burst_enabled.get():
-            if not self.burst_active:
-                self.burst_active = True
-                threading.Thread(target=self.burst_click, daemon=True).start()
+            self.burst_active = True
 
     def on_release(self, key):
         if key == self.activation_key and not self.toggle_mode:
@@ -224,10 +227,8 @@ def escuchar_tecla():
     def capturar(key):
         clicker.set_key_object(key)
         listener.stop()
-
     listener = keyboard.Listener(on_press=capturar)
     listener.start()
-
 ctk.CTkButton(left_frame, text="Cambiar Tecla", command=escuchar_tecla, font=FONT_TEXT).pack(pady=5)
 
 ctk.CTkCheckBox(left_frame, text="Activar modo BURST (C)", variable=burst_enabled, font=FONT_TEXT, text_color=COLOR_SECONDARY).pack(pady=(5, 0))
@@ -236,23 +237,20 @@ status_label = ctk.CTkLabel(left_frame, text="Presiona la tecla para iniciar/det
 status_label.pack(pady=10)
 
 def mostrar_autor():
-    messagebox.showinfo("Información", "Autor: ashwrought\nEsta macro es potente, úsala con responsabilidad.\n\nDiscord: 01_j4ck")
+    messagebox.showinfo("Información", "Autor: ashwrought\n úsala con responsabilidad.\n\nDiscord: 01_j4ck")
 
 ctk.CTkButton(app, text="ⓘ Info", font=FONT_TEXT, width=70, height=25, fg_color="#111", hover_color="#222", text_color=COLOR_SECONDARY, corner_radius=12, command=mostrar_autor).place(relx=0.87, rely=0.92, anchor="center")
 
-# ==== CHANGELOGs ====
+# ==== CHANGELOG ====
 def obtener_changelog():
     return """
-Version 1.2.0
+Version 1.5.0
 
--Fixes errors
--Fixed macro no run    in roblox
--added wait screen
--change key FIXED
-Version 1.3.0 (new)
-
-- add button for "C"
-boost (On/Off)
+- speed increased
+---------------
+- FIXED ERRORS
+---------------
+- FIXED makro closet
 """
 
 ctk.CTkLabel(right_frame, text=" CHANGELOGS", text_color=COLOR_PRIMARY, font=FONT_TEXT).pack(pady=(10, 5))
